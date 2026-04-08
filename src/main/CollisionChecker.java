@@ -13,6 +13,41 @@ public class CollisionChecker {
         this.gp = gp;
     }
 
+    public int checkObject(Entity entity, boolean player, String checkDirection) {
+        int index = 999;
+
+        for(int i = 0; i < gp.obj.length; i++) {
+            if(gp.obj[i] != null) {
+                // Get hitboxes in world coordinates
+                entity.soildArea.x = (int) (entity.worldX + entity.solidAeaDefaultX);
+                entity.soildArea.y = (int) (entity.worldY + entity.solidAeaDefaultY);
+                gp.obj[i].solidArea.x = gp.obj[i].worldX + gp.obj[i].solidAreaDefaultX;
+                gp.obj[i].solidArea.y = gp.obj[i].worldY + gp.obj[i].solidAreaDefaultY;
+
+                switch (checkDirection) {
+                    case "up": entity.soildArea.y -= entity.speed; break;
+                    case "down": entity.soildArea.y += entity.speed; break;
+                    case "left": entity.soildArea.x -= entity.speed; break;
+                    case "right": entity.soildArea.x += entity.speed; break;
+                }
+
+                if (entity.soildArea.intersects(gp.obj[i].solidArea)) {
+                    if(gp.obj[i].collision) {
+                        entity.collisionOn = true;
+                    }
+                    if(player) index = i;
+                }
+
+                // Always reset hitboxes back to default
+                entity.soildArea.x = entity.solidAeaDefaultX;
+                entity.soildArea.y = entity.solidAeaDefaultY;
+                gp.obj[i].solidArea.x = gp.obj[i].solidAreaDefaultX;
+                gp.obj[i].solidArea.y = gp.obj[i].solidAreaDefaultY;
+            }
+        }
+        return index;
+    }
+
     public void checkTile(Entity entity) {
 // Get the Entity's current hitbox position in the world
         int entityLeftWorldX = (int) (entity.worldX + entity.soildArea.x);
@@ -76,7 +111,6 @@ public class CollisionChecker {
                 } else { entity.collisionOn = true; }
                 break;
         }
-
     }
     private void checkIntersection(Entity entity, Rectangle predictedHitbox, int col, int row) {
         Tile tile = gp.tileM.tile[gp.tileM.mapTileNum[col][row]];
@@ -93,5 +127,4 @@ public class CollisionChecker {
             entity.collisionOn = true;
         }
     }
-
 }

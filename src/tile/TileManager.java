@@ -22,7 +22,7 @@ public class TileManager {
         mapTileNum = new int [gp.maxWorldCol][gp.maxWorldRow];
 
         getTileImage();
-        loadmap("/res/maps/map4.txt");
+        loadmap("/res/maps/map3.txt");
     }
 
     public void getTileImage() {
@@ -161,7 +161,7 @@ public class TileManager {
             tile[33].horizontalFlip = true;
 
             tile[34] = new Tile();
-            tile[34].image = ImageIO.read(getClass().getResourceAsStream("/res/tiles/basicbiome/32pxFloorTIle.png"));
+            tile[34].image = ImageIO.read(getClass().getResourceAsStream("/res/tiles/basicbiome/FloorTIle.png"));
 
             tile[35] = new Tile();
             tile[35].image = ImageIO.read(getClass().getResourceAsStream("/res/tiles/basicbiome/32pxBrickWallVoidFilled.png"));
@@ -242,7 +242,14 @@ public class TileManager {
             tile[54].horizontalFlip = true;
             tile[54].verticalFlip = true;
 
+            tile[55] = new Tile();
+            tile[55].image = ImageIO.read(getClass().getResourceAsStream("/res/tiles/basicbiome/DoorLeftTile.png"));
 
+            tile[56] = new Tile();
+            tile[56].image = ImageIO.read(getClass().getResourceAsStream("/res/tiles/basicbiome/32pxFullBrickWall.png"));
+
+            tile[57] = new Tile();
+            tile[57].image = ImageIO.read(getClass().getResourceAsStream("/res/tiles/basicbiome/ChestTile.png"));
 
         }catch(IOException e) {
             e.printStackTrace();

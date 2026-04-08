@@ -14,12 +14,15 @@ public class Player extends Entity{
     private Random rand = new Random();
 
     long lastIdleTime = 0;
+
+
     final long cooldownTimeMillis = 500;
     GamePanel gp;
     KeyHandler keyH;
 
     public final int screenX;
     public final int screenY;
+    public String lastDirection = "down";
 
 
     public Player(GamePanel gp, KeyHandler keyH) {
@@ -36,15 +39,19 @@ public class Player extends Entity{
         int hitboxWidth = 48;
         int hitboxHeight = 30;
 
+        solidAeaDefaultX = (64 - hitboxWidth) / 2;
+        solidAeaDefaultY = 40;
+
         soildArea = new Rectangle((64-hitboxWidth)/2, 40, hitboxWidth, hitboxHeight);
+
 
         setDefaultValues();
         getPlayerImage();
     }
 
     public void setDefaultValues() {
-        worldX = gp.tileSize * 8 - (gp.tileSize /2);
-        worldY = gp.tileSize * 12 - (gp.tileSize /2);
+        worldX = gp.tileSize * 9 - (gp.tileSize /2) + 32;
+        worldY = gp.tileSize * 9 - (gp.tileSize /2);
         speed = 4;
         direction = "down";
     }
@@ -74,9 +81,7 @@ public class Player extends Entity{
     public void update() {
         long currentTime = System.currentTimeMillis();
 
-        // 1. SET DIRECTION BASED ON INPUT
-        // We prioritize Up/Down for the collision checker direction,
-        // but the actual movement will handle both axes.
+        // 1. USTALANIE KIERUNKU NA PODSTAWIE WEJŚCIA (Input)
         if (keyH.upPressed || keyH.downPressed || keyH.leftPressed || keyH.rightPressed) {
             if (keyH.upPressed) {
                 direction = "up";
@@ -89,8 +94,13 @@ public class Player extends Entity{
             }
             lastIdleTime = currentTime;
         } else {
-            // Handle Transition to Idle
+            // Logika przejścia w tryb Idle
             if (currentTime - lastIdleTime >= cooldownTimeMillis) {
+                // Zapisujemy ostatni kierunek przed wejściem w idle,
+                // aby CollisionChecker wiedział, gdzie patrzymy przy interakcji
+                if (!direction.equals("idle")) {
+                    lastDirection = direction;
+                }
                 direction = "idle";
                 if (currentIdle == null) {
                     currentIdle = rand.nextBoolean() ? idle1 : idle2;
@@ -98,57 +108,110 @@ public class Player extends Entity{
             }
         }
 
-        // 2. CHECK TILE COLLISION
-        collisionOn = false;
-        gp.cChecker.checkTile(this);
-
-        // 3. IF COLLISION IS FALSE, MOVE THE PLAYER
+        // 2. RUCH I KOLIZJE (Tylko jeśli nie jesteśmy w IDLE lub jeśli chcemy sprawdzić interakcję)
         if (!direction.equals("idle")) {
             double currentSpeed = speed;
+
+            // Korekta prędkości diagonalnej (0.707 to ok. pierwiastek z 2 przez 2)
             boolean isDiagonal = (keyH.upPressed || keyH.downPressed) && (keyH.leftPressed || keyH.rightPressed);
             if (isDiagonal) {
                 currentSpeed *= 0.707;
             }
 
-            // --- IMPROVED COLLISION LOGIC ---
+            // --- KOLIZJA OSIOWA (Separated Axis Collision) ---
+            // Pozwala ślizgać się wzdłuż ścian, gdy idziemy na ukos.
 
-            // A. Handle Vertical Movement (Y-Axis)
+            // A. Oś Pionowa (Y)
             if (keyH.upPressed || keyH.downPressed) {
-                // Temporarily set direction for the checker to understand where we are looking
-                String originalDirection = direction;
-                direction = keyH.upPressed ? "up" : "down";
-
+                String tempDir = keyH.upPressed ? "up" : "down";
                 collisionOn = false;
+
+                // Sprawdzamy kafelki i obiekty dla osi Y
                 gp.cChecker.checkTile(this);
+                gp.cChecker.checkObject(this, true, tempDir);
 
                 if (!collisionOn) {
                     if (keyH.upPressed) worldY -= currentSpeed;
                     if (keyH.downPressed) worldY += currentSpeed;
                 }
-                direction = originalDirection; // Restore for animation
             }
 
-            // B. Handle Horizontal Movement (X-Axis)
+            // B. Oś Pozioma (X)
             if (keyH.leftPressed || keyH.rightPressed) {
-                String originalDirection = direction;
-                direction = keyH.leftPressed ? "left" : "right";
-
+                String tempDir = keyH.leftPressed ? "left" : "right";
                 collisionOn = false;
+
+                // Sprawdzamy kafelki i obiekty dla osi X
                 gp.cChecker.checkTile(this);
+                gp.cChecker.checkObject(this, true, tempDir);
 
                 if (!collisionOn) {
                     if (keyH.leftPressed) worldX -= currentSpeed;
                     if (keyH.rightPressed) worldX += currentSpeed;
                 }
-                direction = originalDirection;
             }
 
-            // Map Boundary Safeguards
+            // Ograniczenie granic świata
             worldX = Math.max(0, Math.min(worldX, gp.worldWidth - gp.tileSize));
             worldY = Math.max(0, Math.min(worldY, gp.worldHeight - gp.tileSize));
         }
 
-        // 4. SPRITE ANIMATION LOGIC
+        // 3. INTERAKCJA Z OBIEKTAMI (Klawisz E)
+        if (gp.keyH.enterPressed) {
+            String checkDir = direction.equals("idle") ? lastDirection : direction;
+
+            // Tworzymy hitbox interakcji (powiększony o 16px)
+            Rectangle interactionRect = new Rectangle(
+                    (int)worldX + (int)solidAeaDefaultX,
+                    (int)worldY + (int)solidAeaDefaultY,
+                    soildArea.width,
+                    soildArea.height
+            );
+            interactionRect.grow(16, 16);
+
+            int objIndex = 999;
+            for(int i = 0; i < gp.obj.length; i++) {
+                if(gp.obj[i] != null) {
+                    // Hitbox obiektu w świecie
+                    Rectangle objRect = new Rectangle(
+                            gp.obj[i].worldX + gp.obj[i].solidAreaDefaultX,
+                            gp.obj[i].worldY + gp.obj[i].solidAreaDefaultY,
+                            gp.obj[i].solidArea.width,
+                            gp.obj[i].solidArea.height
+                    );
+
+                    // 1. Sprawdzamy, czy prostokąty się przecinają
+                    if (interactionRect.intersects(objRect)) {
+
+                        // 2. Sprawdzamy, czy gracz jest zwrócony w stronę obiektu
+                        boolean facingObject = false;
+
+                        // Środki obiektów do porównania
+                        int playerCenterX = (int)worldX + gp.tileSize / 2;
+                        int playerCenterY = (int)worldY + gp.tileSize / 2;
+                        int objCenterX = gp.obj[i].worldX + gp.obj[i].solidArea.width / 2;
+                        int objCenterY = gp.obj[i].worldY + gp.obj[i].solidArea.height / 2;
+
+                        switch(checkDir) {
+                            case "up":    if(objCenterY < playerCenterY) facingObject = true; break;
+                            case "down":  if(objCenterY > playerCenterY) facingObject = true; break;
+                            case "left":  if(objCenterX < playerCenterX) facingObject = true; break;
+                            case "right": if(objCenterX > playerCenterX) facingObject = true; break;
+                        }
+
+                        if (facingObject && gp.obj[i].interactable) {
+                            objIndex = i;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            interactObject(objIndex);
+            gp.keyH.enterPressed = false;
+        }
+
+        // 4. ANIMACJA SPRITE'ÓW
         spriteCounter++;
         RightLeftSpriteCounter++;
 
@@ -158,11 +221,20 @@ public class Player extends Entity{
         }
 
         if (RightLeftSpriteCounter > 20) {
-            if (rightLeftSpriteNum == 1) rightLeftSpriteNum = 2;
-            else if (rightLeftSpriteNum == 2) rightLeftSpriteNum = 3;
-            else if (rightLeftSpriteNum == 3) rightLeftSpriteNum = 4;
-            else if (rightLeftSpriteNum == 4) rightLeftSpriteNum = 1;
+            rightLeftSpriteNum++;
+            if (rightLeftSpriteNum > 4) {
+                rightLeftSpriteNum = 1;
+            }
             RightLeftSpriteCounter = 0;
+        }
+    }
+    public void interactObject(int i) {
+        if (i != 999) { // 999 is standard "no object" return from CollisionChecker
+            if (gp.obj[i].interactable) {
+                gp.gameState = gp.dialogueState;
+                gp.obj[i].speakObject(gp);
+                // You can also add specific logic based on gp.obj[i].name here
+            }
         }
     }
 
@@ -222,6 +294,6 @@ public class Player extends Entity{
 
         int yOffset = spriteHeight - gp.tileSize;
 
-        g2.drawImage(image, screenX,screenY - yOffset, spriteWidth, spriteHeight, null);
+        g2.drawImage(image, screenX, screenY - yOffset, spriteWidth, spriteHeight, null);
     }
 }
