@@ -1,113 +1,57 @@
-🗡️ 2D Java Tile-Based Game(WIP)
+# 🗡️ 2D Java Tile-Based Game (WIP)
 
-A simple 2D tile-based game built using Java and Swing, featuring player movement, collision detection, and a custom tile engine.
+> A lightweight, custom-built 2D tile-based game engine and framework developed from scratch using Java and Swing. 
 
-📸 Overview
+This project serves as a foundational game framework created for an educational YouTube series, showcasing how to build a 2D game without external game engines. It is fully open-source—feel free to explore, modify, and expand upon the code to build your own worlds.
 
-This project is a small game framework created for a YouTube video/series, showcasing how to build a 2D game from scratch in Java.
+## 📸 Overview
 
-It is also fully open source, so you can explore, modify, and expand it however you want.
+At its core, this project handles the heavy lifting of 2D game mechanics:
+* **Omnidirectional Movement:** The player can move in 4 directions with normalized diagonal support.
+* **Dynamic World Generation:** The world is constructed from a tile map loaded dynamically from a text file.
+* **Precise Physics:** Collision is handled per tile with custom bounding boxes.
+* **Cinematic Camera:** A smoothly interpolated camera follows the player.
+* **Sprite Animation:** A basic, extensible animation system for characters and environments.
 
-In this project:
+## 🎨 Assets
 
-The player can move in 4 directions (with diagonal support)
-The world is built from a tile map loaded from a file
-Collision is handled per tile with custom hitboxes
-Camera follows the player smoothly
-Basic animation system is implemented
-🎨 Assets
+All visual assets in this project are custom, hand-drawn pixel art.
+* **Terrain:** Grass, mud, straw, and more.
+* **Architecture:** Standard brick walls, 3D-perspective walls, and curved boundaries.
+* **Biomes:** Special environments (e.g., Hell biome, Basic biome) *(WIP)*.
+* **Characters:** Custom-loaded and fully animated player sprites.
 
-All tiles used in this project are hand-drawn.
+## ⚙️ Core Features
 
-This includes:
+### 🧱 Tile System
+* **Tile-based rendering** with programmatic horizontal & vertical flipping (saving asset space).
+* **Custom collision boxes** mapped per individual tile.
+* **Frustum Culling / Optimization:** Only tiles visible within the camera's viewport are drawn.
 
-Terrain (grass, mud, straw, etc.)
-Walls (brick, 3D walls, curved walls)
-Special biome tiles (e.g. hell biome, basic biome) (WIP)
+### 🗺️ Map System
+* **Data-driven loading:** Maps are generated from `.txt` files where specific integers correspond to tile IDs.
+* **Scalability:** Supports large-scale worlds (e.g., 80x50 tile grids).
 
-Player sprites are also custom-loaded and animated.
+### 🧍 Player & Movement
+* **Smooth movement** with diagonal normalization (speed capped at `0.707` to prevent faster diagonal traversal).
+* **State-based animation:** Directional movement and idle animation states.
+* **Collision-aware pathing.**
 
-⚙️ Features
-🧱 Tile System
-Tile-based rendering
-Tile flipping (horizontal & vertical)
-Custom collision boxes per tile
-Efficient rendering (only visible tiles drawn)
-🗺️ Map System
-Maps are loaded from .txt files
-Each number corresponds to a tile ID
-Supports large worlds (80x50 tiles)
-🧍 Player
-Smooth movement (including diagonal normalization)
-Direction-based animation
-Idle animation system
-Collision-aware movement
-🎥 Camera
-Player-centered camera
-Only renders visible part of the world (optimization)
-💥 Collision System
-Tile-based collision detection
-Custom hitboxes for both tiles and player
-Axis-separated collision (X and Y handled independently → smoother movement)
-🧠 Controls
-Key	Action
-W	Move Up
-S	Move Down
-A	Move Left
-D	Move Right
-🚀 How to Run
-Clone the repository:
-git clone https://github.com/yourusername/your-repo.git
-Open in your IDE (e.g. IntelliJ)
-Make sure resources are correctly marked as Resources Root
-Run:
-Main.java
-📂 Project Structure
-main/
-  ├── Main.java
-  ├── GamePanel.java
-  ├── KeyHandler.java
-  ├── CollisionChecker.java
+### 💥 Collision Engine
+* **Axis-Separated Detection:** X and Y axis collisions are calculated independently, allowing the player to smoothly slide along walls rather than getting stuck.
+* **Custom Hitboxes:** Configurable logic for both world tiles and moving entities.
 
-entity/
-  ├── Entity.java 
-  └── Player.java
+## 🎮 Controls
 
-tile/
-  ├── Tile.java
-  └── TileManager.java
+| Key | Action |
+| :---: | :--- |
+| `W` | Move Up |
+| `S` | Move Down |
+| `A` | Move Left |
+| `D` | Move Right |
 
-res/
-  ├── tiles/
-  ├── player/
-  ├── objects/
-  └── maps/
+## 🚀 How to Run
 
-object/
-  └── SuperObject/
-
-  
-🛠️ Tech Stack
-Java
-Swing (Graphics2D)
-BufferedImage
-Custom game loop (60 FPS)
-📈 Future Improvements
-Enemies / AI
-Combat system
-Inventory system
-Better animation blending
-Sound effects & music
-GUI
-💡 Notes
-This project was created for YouTube content, so the code is structured to be understandable and educational
-Rendering uses manual optimization by only drawing tiles within camera range
-Tile flipping is handled programmatically (no need for duplicate assets)
-Movement uses normalized diagonal speed (0.707) to prevent faster diagonal movement
-📜 License
-
-This project is open source – feel free to use, modify, and build upon it.
-
-👤 Author
-
-Created by Roleks
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/yourusername/your-repo.git](https://github.com/yourusername/your-repo.git)
