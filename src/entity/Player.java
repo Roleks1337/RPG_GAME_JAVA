@@ -58,8 +58,8 @@ public class Player extends Entity{
 
     public void getPlayerImage() {
         try {
-            idle1 = ImageIO.read(getClass().getResourceAsStream("/res/player/knight_idle_1.png"));
-            idle2 = ImageIO.read(getClass().getResourceAsStream("/res/player/knight_idle_2.png"));
+            idle1 = ImageIO.read(getClass().getResourceAsStream("/res/player/knight_idle_1.png")); //Untitled-4
+            idle2 = ImageIO.read(getClass().getResourceAsStream("/res/player/knight_idle_2.png")); //knight_idle_2
             down1 = ImageIO.read(getClass().getResourceAsStream("/res/player/knight_down_1.png"));
             down2 = ImageIO.read(getClass().getResourceAsStream("/res/player/knight_down_2.png"));
             up1 = ImageIO.read(getClass().getResourceAsStream("/res/player/knight_up_1.png"));
